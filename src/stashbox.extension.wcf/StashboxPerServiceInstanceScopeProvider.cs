@@ -1,5 +1,4 @@
-﻿using Stashbox.Infrastructure;
-using System.ServiceModel;
+﻿using System.ServiceModel;
 
 namespace Stashbox.Extension.Wcf
 {
@@ -8,9 +7,9 @@ namespace Stashbox.Extension.Wcf
         private InstanceContext InstanceContext => OperationContext?.InstanceContext;
         private OperationContext OperationContext => OperationContext.Current;
 
-        private IStashboxContainer _container;
+        private IDependencyResolver _container;
 
-        public StashboxPerServiceInstanceScopeProvider(IStashboxContainer container)
+        public StashboxPerServiceInstanceScopeProvider(IDependencyResolver container)
         {
             this._container = container;
         }

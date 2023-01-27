@@ -1,5 +1,4 @@
-﻿using Stashbox.Infrastructure;
-using System.ServiceModel;
+﻿using System.ServiceModel;
 
 namespace Stashbox.Extension.Wcf
 {

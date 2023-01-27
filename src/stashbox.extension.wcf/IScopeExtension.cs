@@ -1,6 +1,4 @@
-﻿using Stashbox.Infrastructure;
-
-namespace Stashbox.Extension.Wcf
+﻿namespace Stashbox.Extension.Wcf
 {
     public interface IScopeExtension
     {

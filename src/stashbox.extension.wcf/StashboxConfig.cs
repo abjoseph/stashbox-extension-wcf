@@ -1,4 +1,4 @@
-﻿using Stashbox.Infrastructure;
+﻿using Stashbox.Lifetime;
 using Stashbox.Utils;
 using System;
 using System.Globalization;
@@ -51,14 +51,12 @@ namespace Stashbox.Extension.Wcf
 
         private static void ConfigureStashboxServiceComponents(IStashboxContainer container)
         {
-            container.RegisterType<StashboxInstanceProvider>();
+            container.Register<StashboxInstanceProvider>();
 
-            container.RegisterType<IStashboxContainer>(context => context.WithFactory(_ => _.BeginScope()));
-
-            container.RegisterType<IScopeProvider, StashboxPerServiceInstanceScopeProvider>(context => context
+            container.Register<IScopeProvider, StashboxPerServiceInstanceScopeProvider>(context => context
                      .WhenDependantIs<StashboxInstanceProvider>());
 
-            container.RegisterType<IScopeProvider, StashboxPerServiceOperationScopeProvider>(context => context
+            container.Register<IScopeProvider, StashboxPerServiceOperationScopeProvider>(context => context
                      .WhenDependantIs<StashboxDependencyInjectionParameterInspector>());
 
             StashboxServiceHostFactoryBase.SetContainer(container);
@@ -92,7 +90,7 @@ namespace Stashbox.Extension.Wcf
             foreach (Type serviceType in serviceTypes)
             {
                 ILifetime lifetimeScope = ServiceMetadataProvider.GetLifetimeScope(serviceType);
-                container.RegisterType(serviceType, context => context
+                container.Register(serviceType, context => context
                          .WithLifetime(lifetimeScope));
             }
         }

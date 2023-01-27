@@ -1,6 +1,5 @@
-﻿using Stashbox.Infrastructure;
-using Stashbox.Infrastructure.Registration;
-using Stashbox.Lifetime;
+﻿using Stashbox.Lifetime;
+using Stashbox.Registration;
 using Stashbox.Utils;
 using System;
 using System.Linq;
@@ -74,7 +73,7 @@ namespace Stashbox.Extension.Wcf
             if (lifetime is ScopedLifetime)
                 registrationLifetime = ServiceRegistrationLifetime.Scoped;
 
-            Shield.EnsureTrue(registrationLifetime.HasValue, $"An unsupported lifetime of type \"{lifetime.GetType().FullName}\" has been detected for service type \"{serviceType.FullName}\".");
+            Shield.EnsureTrue(registrationLifetime.HasValue, $"An unsupported lifetime of type \"{registrationLifetime.GetType().FullName}\" has been detected for service type \"{serviceType.FullName}\".");
 
             return registrationLifetime.Value;
         }
@@ -94,7 +93,7 @@ namespace Stashbox.Extension.Wcf
 
                 if (IsConcreteService(serviceType))
                 {
-                    container.RegisterType(serviceType, context => context.WithLifetime(GetLifetimeScope(serviceType)));
+                    container.Register(serviceType, context => context.WithLifetime(GetLifetimeScope(serviceType)));
                 }
                 else if (IsServiceContract(serviceType))
                 {
@@ -102,7 +101,7 @@ namespace Stashbox.Extension.Wcf
                     Shield.EnsureNotNull(concreteServiceTypes, $"A concrete service type that implements \"{serviceType.FullName}\" could not be found in the list of known service assemblies defined by \"{nameof(StashboxConfig)}.{nameof(StashboxConfig.ServiceAssemblies)}\".");
                     foreach (var concreteServiceType in concreteServiceTypes)
                     {
-                        container.RegisterType(concreteServiceType, context => context.WithLifetime(GetLifetimeScope(concreteServiceType)));
+                        container.Register(concreteServiceType, context => context.WithLifetime(GetLifetimeScope(concreteServiceType)));
                     }
                 }
                 else

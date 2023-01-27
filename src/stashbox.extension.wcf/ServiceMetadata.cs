@@ -1,4 +1,4 @@
-﻿using Stashbox.Infrastructure.Registration;
+﻿using Stashbox.Registration;
 using Stashbox.Utils;
 using System;
 using System.ServiceModel;

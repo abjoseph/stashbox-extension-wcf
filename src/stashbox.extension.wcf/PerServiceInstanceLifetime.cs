@@ -1,55 +1,35 @@
-﻿using Stashbox.Entity;
-using Stashbox.Infrastructure;
+﻿using Stashbox.BuildUp;
 using Stashbox.Lifetime;
+using Stashbox.Registration;
+using Stashbox.Resolution;
 using System;
 using System.Linq.Expressions;
-using Stashbox.Infrastructure.Registration;
 
 namespace Stashbox.Extension.Wcf
 {
-    public sealed class PerServiceInstanceLifetime : LifetimeBase
+    public sealed class PerServiceInstanceLifetime : ScopedLifetimeBase
     {
         private volatile Expression _expression;
 
         private readonly object _lock = new object();
 
-        private readonly int _scopeId = Guid.NewGuid().GetHashCode();
-
-        /// <summary>
-        /// Constructs a <see cref="PerServiceInstanceLifetime"/>.
-        /// </summary>
-        public PerServiceInstanceLifetime() { }
-
-        /// <summary>
-        /// Constructs a <see cref="PerServiceInstanceLifetime"/>.
-        /// </summary>
-        /// <param name="scopedId"></param>
-        public PerServiceInstanceLifetime(int scopedId)
-        {
-            this._scopeId = scopedId;
-        }
-
-        public override Expression GetExpression(IServiceRegistration serviceRegistration, IObjectBuilder objectBuilder, ResolutionInfo resolutionInfo, Type resolveType)
+        public override Expression GetExpression(IContainerContext containerContext, IServiceRegistration serviceRegistration, IObjectBuilder objectBuilder, ResolutionContext resolutionContext, Type resolveType)
         {
             if (this._expression != null) return this._expression;
             lock (this._lock)
             {
                 if (this._expression != null) return this._expression;
-                var expr = base.GetExpression(serviceRegistration, objectBuilder, resolutionInfo, resolveType);
-                if (expr == null)
+                var factory = base.GetFactoryExpression(containerContext, serviceRegistration, objectBuilder, resolutionContext, resolveType);
+                if (factory == null)
                     return null;
-
-                var factory = expr.CompileDelegate(Stashbox.Constants.ScopeExpression);
 
                 var method = Constants.GetPerServiceInstanceScopedValueMethod.MakeGenericMethod(resolveType);
 
-                this._expression = Expression.Call(method,
-                    Stashbox.Constants.ScopeExpression,
-                    Expression.Constant(factory),
-                    Expression.Constant(this._scopeId));
+                return this._expression = method.InvokeMethod(
+                    resolutionContext.CurrentScopeParameter,
+                    factory,
+                    base.ScopeId.AsConstant());
             }
-
-            return this._expression;
         }
 
         private static TValue CollectScopedInstance<TValue>(IResolutionScope scope, Func<IResolutionScope, object> factory, string scopeId)
@@ -76,6 +56,6 @@ namespace Stashbox.Extension.Wcf
             return instance;
         }
 
-        public override ILifetime Create() => new PerServiceInstanceLifetime(this._scopeId);
+        public override ILifetime Create() => new PerServiceInstanceLifetime();
     }
 }
